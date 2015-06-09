@@ -133,17 +133,13 @@ function anotherStateFilter(element) {
 
 function stateSummary(prev,curr) {
 
-
-
   if(prev.hasOwnProperty(curr.state)) {
 
-    var out = prev[curr.state] + Math.round((curr.amount * 0.189)*100)/100;
-
-    prev[curr.state] = Math.round(out *100)/100;
+    prev[curr.state] += curr.amount * 0.189;
 
   } else {
 
-    prev[curr.state] = Math.round((curr.amount * 0.189)*100)/100;
+    prev[curr.state] = curr.amount * 0.189;
   }
 
   return prev;
@@ -159,13 +155,22 @@ function stateSumFilter(element) {
   return false;
 }
 
+function stateSums(prev,curr) {
+
+  prev += summedStates[curr];
+
+  return Math.round(prev * 100)/100;
+}
+
 var validStates = dataset.bankBalances.filter(anotherStateFilter);
 var summedStates = validStates.reduce(stateSummary,{});
 var filteredStates = Object.keys(summedStates).filter(stateSumFilter);
 
-console.log(filteredStates);
+var sumOfHighInterests = filteredStates.reduce(stateSums,0);
 
-var sumOfHighInterests = validStates.reduce(stateSummary,{});
+//var sumOfHightInterests = Object.keys(dataset.bankBalances.filter(anotherStateFilter).reduce(stateSummary,{})).filter(stateSumFilter).reduce(stateSums,0);
+
+//console.log(sumOfHighInterests);
 
 /*
   aggregate the sum of bankBalance amounts
@@ -175,7 +180,25 @@ var sumOfHighInterests = validStates.reduce(stateSummary,{});
     and the value is the sum of all amounts from that state
       the value must be rounded to the nearest cent
  */
-var stateSums = null;
+ function stateSums1(prev,curr) {
+
+  if(prev.hasOwnProperty(curr.state)) {
+
+    prev[curr.state] += parseFloat(curr.amount);
+
+  } else {
+
+    prev[curr.state] = parseFloat(curr.amount);
+  }
+
+  prev[curr.state] = Math.round(prev[curr.state] *100)/ 100;
+
+  return prev;
+ }
+
+var stateSums = dataset.bankBalances.reduce(stateSums1,{});
+
+//console.log(stateSums);
 
 /*
   set lowerSumStates to an array containing
@@ -183,7 +206,35 @@ var stateSums = null;
   where the sum of amounts in the state is
     less than 1,000,000
  */
-var lowerSumStates = null;
+function lowerSumStates1(prev,curr) {
+
+  if(prev.hasOwnProperty(curr.state)) {
+
+    prev[curr.state] += parseFloat(curr.amount);
+
+  } else {
+
+    prev[curr.state] = parseFloat(curr.amount);
+  }
+
+  prev[curr.state] = Math.round(prev[curr.state] *100)/ 100;
+
+  return prev;
+};
+
+function lowerSumStates2(element) {
+
+  if (lowerSumStatesSums[element] < 1000000) {
+
+    return true;
+  }
+
+  return false;
+}
+
+var lowerSumStatesSums = dataset.bankBalances.reduce(lowerSumStates1,{});
+
+var lowerSumStates = Object.keys(lowerSumStatesSums).filter(lowerSumStates2);
 
 /*
   set higherStateSums to be the sum of
@@ -191,7 +242,43 @@ var lowerSumStates = null;
     where the sum of amounts in the state is
       greater than 1,000,000
  */
-var higherStateSums = null;
+
+function higherStateSums1(prev,curr) {
+
+  if(prev.hasOwnProperty(curr.state)) {
+
+    prev[curr.state] += parseFloat(curr.amount);
+
+  } else {
+
+    prev[curr.state] = parseFloat(curr.amount);
+  }
+
+  prev[curr.state] = Math.round(prev[curr.state] *100)/ 100;
+
+  return prev;
+};
+
+function higherStateSums2(element) {
+
+  if (higherStateSumsSums[element] > 1000000) {
+
+    return true;
+  }
+
+  return false;
+}
+
+function higherStateSums3(prev,curr) {
+
+  prev += parseFloat(higherStateSumsSums[curr]);
+  return Math.round(prev * 100)/100;
+}
+
+var higherStateSumsSums = dataset.bankBalances.reduce(higherStateSums1,{});
+var filteredHigherStateSums = Object.keys(higherStateSumsSums).filter(higherStateSums2);
+
+var higherStateSums = filteredHigherStateSums.reduce(higherStateSums3,0);
 
 /*
   set areStatesInHigherStateSum to be true if
@@ -205,7 +292,53 @@ var higherStateSums = null;
     Delaware
   false otherwise
  */
-var areStatesInHigherStateSum = null;
+function areStateInHigherStateSum1(prev,curr) {
+
+  if(prev.hasOwnProperty(curr.state)) {
+
+    prev[curr.state] += parseFloat(curr.amount);
+
+  } else {
+
+    prev[curr.state] = parseFloat(curr.amount);
+  }
+
+  prev[curr.state] = Math.round(prev[curr.state] *100)/ 100;
+
+  return prev;
+};
+
+function areStateInHigherStateSum2(element) {
+
+  if( element === 'WI' ||
+      element === 'IL' ||
+      element === 'WY' ||
+      element === 'OH' ||
+      element === 'GA' ||
+      element === 'DE') {
+
+    return true;
+  }
+
+  return false;
+};
+
+function areStateInHigherStateSum3(element) {
+
+  if(summedStates1[element] > 2550000) {
+
+    return true;
+
+  } else {
+
+    return false;
+  }
+}
+
+var summedStates1 = dataset.bankBalances.reduce(areStateInHigherStateSum1, {});
+var filteredStates1 = Object.keys(summedStates1).filter(areStateInHigherStateSum2);
+
+var areStatesInHigherStateSum = filteredStates1.every(areStateInHigherStateSum3);
 
 /*
   set anyStatesInHigherStateSum to be true if
@@ -219,7 +352,54 @@ var areStatesInHigherStateSum = null;
     Delaware
   false otherwise
  */
-var anyStatesInHigherStateSum = null;
+
+ function anyStateInHigherStateSum1(prev,curr) {
+
+  if(prev.hasOwnProperty(curr.state)) {
+
+    prev[curr.state] += parseFloat(curr.amount);
+
+  } else {
+
+    prev[curr.state] = parseFloat(curr.amount);
+  }
+
+  prev[curr.state] = Math.round(prev[curr.state] *100)/ 100;
+
+  return prev;
+};
+
+function anyStateInHigherStateSum2(element) {
+
+  if( element === 'WI' ||
+      element === 'IL' ||
+      element === 'WY' ||
+      element === 'OH' ||
+      element === 'GA' ||
+      element === 'DE') {
+
+    return true;
+  }
+
+  return false;
+};
+
+function anyStateInHigherStateSum3(element) {
+
+  if(summedStates2[element] > 2550000) {
+
+    return true;
+
+  } else {
+
+    return false;
+  }
+}
+
+var summedStates2 = dataset.bankBalances.reduce(anyStateInHigherStateSum1, {});
+var filteredStates2 = Object.keys(summedStates1).filter(anyStateInHigherStateSum2);
+
+var anyStatesInHigherStateSum = filteredStates1.some(anyStateInHigherStateSum3);
 
 
 module.exports = {
